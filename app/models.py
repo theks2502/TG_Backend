@@ -5,7 +5,6 @@ from .database import Base
 from datetime  import date , datetime 
 
 
-
 class ODT(Base):
     __tablename__ = "odt_bookings"
 
@@ -33,25 +32,6 @@ class ODT(Base):
         CheckConstraint("college_name <> '' AND TRIM(college_name) <> ''", name="college_not_blank"),
     )
 
-class Manali(Base):
-    __tablename__ ="manali"
-
-    id = Column(Integer , primary_key = True , index = True )
-    full_name = Column(String(100) , nullable = False)
-    gender = Column(String(20) , nullable = False)
-    age = Column(Integer , nullable = False)
-    email_address = Column(String(100) , nullable =  False)
-    contact_number = Column(String(20), nullable=False)
-    whatsapp_number = Column(String(20), nullable=False)
-    emergency_contact_number = Column(String(20), nullable=False)
-    college_name = Column(String(200), nullable=False)
-    proof_id_type = Column(String(200) , nullable = False) 
-    chosen_id_number = Column(String(50) , nullable = False) 
-    id_image = Column(String(255) , nullable = False) 
-    medical_details = Column(String(200))
-    special_request = Column(String(300))
-    agree = Column(Boolean, default=False)
-    submitted_at = Column(TIMESTAMP(timezone=True) , nullable= False ,server_default = text('now()') ) 
 
 class Tamia(Base):
     __tablename__="tamia"
@@ -277,5 +257,77 @@ class VRDarshanDevotee(Base):
 
     def __repr__(self):
         return f"<VRDarshanDevotee id={self.id} name={self.full_name}>"
+
+#Instant VR Darshan Booking Model
+
+class InstantVRDarshan(Base):
+    __tablename__ = "instant_vr_darshan"
+
+    id = Column(Integer, primary_key=True, index=True)
+    full_name = Column(String(150), nullable=False)
+    age = Column(Integer, nullable=False)
+    gender = Column(String(20), nullable=False)
+    darshanCategory = Column(String(100), nullable=False)
+    darshan = Column(String(150), nullable=False)
+    contact_number = Column(String(15), nullable=False)
+    payment_option = Column(String(255), nullable=True)
+    submitted_at =  Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False
+    )
+
+#MANALI TRIP
+class ManaliTripBooking(Base):
+    __tablename__ = "manali_trip_booking"
+
+    id = Column(Integer, primary_key=True, index=True)
+    full_name = Column(String, nullable=False)
+    gender = Column(String, nullable=False)
+    age = Column(Integer, nullable=False)
+    email = Column(String, nullable=False)
+    contact_number = Column(String, nullable=False)
+    whatsapp_number = Column(String, nullable=False)
+    emergency_number = Column(String, nullable=True)
+    college_name = Column(String, nullable=True)
+    proof_id_type = Column(String, nullable=False)
+    id_number = Column(String, nullable=False)
+    id_image_url = Column(String, nullable=False)
+    medical_detail = Column(String, nullable=True)
+    special_request = Column(String, nullable=True)
+    train_type = Column(String, nullable=False)
+    no_of_passengers = Column(Integer, nullable=False)
+    agreed = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    payment_screenshot = Column(String(255), nullable=True)
+    passengers = relationship(
+        "ManaliTripPassenger",
+        back_populates="booking",
+        cascade="all, delete"
+    )
+
+class ManaliTripPassenger(Base):
+    __tablename__ = "manali_trip_passengers"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    booking_id = Column(
+        Integer,
+        ForeignKey("manali_trip_booking.id"),
+        nullable=False
+    )
+
+    full_name = Column(String, nullable=False)
+    gender = Column(String, nullable=False)
+    age = Column(Integer, nullable=False)
+    contact_number = Column(String, nullable=False)
+    train_type = Column(String, nullable=False)
+
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    booking = relationship("ManaliTripBooking", back_populates="passengers")
+
+
+
 
 

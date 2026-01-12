@@ -9,7 +9,8 @@ from fastapi import BackgroundTasks
 from app.utils.invoice_generator import generate_invoice
 from datetime import date
 from app.utils.supabase_uploads import upload_to_supabase
-
+from app.models import InstantVRDarshan
+from app.schema import InstantVRDarshanRequest
 
 
 router = APIRouter()
@@ -128,5 +129,33 @@ async def create_vr_darshan_booking(
         "message": "VR Darshan booking created successfully",
         "booking_id": booking.id
     }
+
+@router.post("/instant-vr-darshan")
+def add_multiple(devotees: str = Form(...),          
+    paymentMode: str = Form(...),
+     db: Session = Depends(get_db)):
+    
+    devotees_list = json.loads(devotees)
+    rows = []
+
+    for d in devotees_list:
+        row = InstantVRDarshan(
+            full_name=d["name"],              # frontend → DB
+            age=d["age"],
+            gender=d["gender"],
+            darshanCategory=d["category"],    # IMPORTANT
+            darshan=d["darshan"],
+            contact_number="NA",              # frontend doesn’t send it
+            payment_option=paymentMode.upper()
+        )
+        rows.append(row)
+
+    db.add_all(rows)
+    db.commit()
+
+    return {
+        "inserted": len(rows)
+    }
+
 
 

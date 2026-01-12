@@ -57,6 +57,22 @@ async def calculate_vr_darshan_price(
     return {
         "payment_qr_url": qr_url,
     }
+@router.get("/manali/price")
+async def calculate_manali_price(
+    sleeper: int , 
+    ac : int
+):
+
+    PRICE_PER_SLEPPER = 5000
+    PRICE_PER_AC = 6000
+    amount = (sleeper * PRICE_PER_SLEPPER) + (ac * PRICE_PER_AC)
+    qr_path = generate_payment_qr(amount)
+    qr_url = upload_to_supabase_qr(qr_path, "manali_qr")
+    session_id = str(uuid.uuid4())
+
+    return {
+        "payment_qr_url": qr_url
+    }
 
 
 

@@ -41,21 +41,6 @@ class ODTResponse(ODTBase):
     class Config:
         from_attributes = True
 
-class Manali(BaseModel):
-    full_name:str
-    gender:str
-    age:int
-    email_address:str
-    contact_number :str
-    whatsapp_number : str 
-    emergency_contact_number : str 
-    college_name : str 
-    proof_id_type : str 
-    chosen_id_number : str 
-    id_image : str 
-    medical_details : Optional[str] = None
-    special_request :str 
-    agree : bool
 
 class Tamia(BaseModel):
     full_name:str
@@ -208,3 +193,47 @@ class VRDarshanBookingSchema(BaseModel):
 
     class Config:
         from_attributes = True
+
+#Instant VR Darshhan 
+
+class InstantVRDarshanDevotee(BaseModel):
+    name: str
+    age: int
+    gender: str
+    category: str
+    darshan: str
+
+
+class InstantVRDarshanRequest(BaseModel):
+    paymentMode: str
+    devotees: List[InstantVRDarshanDevotee]
+
+# Manali Trip '
+
+class ManaliPassengerSchema(BaseModel):
+    full_name: str
+    gender: str
+    age: int
+    contact_number: Optional[str] = None
+    train_type: str
+
+class ManaliTripBookingSchema(BaseModel):
+    full_name: str
+    gender: str
+    age: int
+    email: EmailStr
+    contact_number: str
+    whatsapp_number: str
+    emergency_number: Optional[str] = None
+    college_name: Optional[str] = None
+    proof_id_type: str
+    id_number: str
+    id_image_url: str
+    medical_detail: Optional[str] = None
+    special_request: Optional[str] = None
+    train_type: str
+    no_of_passengers: int
+    agreed: bool
+    payment_screenshot: Optional[str] = None
+    passengers: List[ManaliPassengerSchema]
+

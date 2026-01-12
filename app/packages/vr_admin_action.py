@@ -8,6 +8,11 @@ from app.utils.mail.vr_user_mail import (
     send_user_decline_age_mail,
     send_user_decline_payment_mail
 )
+from app.utils.mail.manali import (
+    send_user_approval_mail_manali,
+    send_user_decline_payment_mail_manali
+)
+
 
 router = APIRouter()
 
@@ -36,6 +41,35 @@ async def admin_action(
 
     elif action == "decline_payment":
         await send_user_decline_payment_mail(booking)
+
+    else:
+        raise HTTPException(400, "Invalid action")
+
+    db.commit()
+
+    return {"message": "Action completed and user notified"}
+
+
+
+@router.get("/admin/manali/action")
+async def admin_action(
+    booking_id: int,
+    action: str,
+    db: Session = Depends(get_db)
+):
+    booking = db.query(models.ManaliTripBooking).filter(
+        models.ManaliTripBooking.id == booking_id
+    ).first()
+
+    if not booking:
+        raise HTTPException(404, "Booking not found")
+
+    if action == "approve":
+        booking.is_confirmed = True
+        await send_user_approval_mail_manali(booking)
+
+    elif action == "decline_payment":
+        await send_user_decline_payment_mail_manali(booking)
 
     else:
         raise HTTPException(400, "Invalid action")
