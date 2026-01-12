@@ -141,7 +141,7 @@ Decline Booking (Payment Not Received):
     # -----------------------------
     email = {
         "from": "Tirth Ghumo <no-reply@tirthghumo.in>",
-        "to": ["thekomalsharma1161@gmail.com"],
+        "to": ["hr.tirthghumo@gmail.com"],
         "subject": "🚍 New Manali Trip Booking",
         "text": email_body,
     }
