@@ -58,8 +58,8 @@ async def send_booking_email_manali(booking, passengers , payment_screenshot_fil
 
     
 
-    approve = f"http://127.0.0.1:8000/admin/manali/action?booking_id={booking.id}&action=approve"
-    decline_payment = f"http://127.0.0.1:8000/admin/manali/action?booking_id={booking.id}&action=decline_payment"
+    approve = f"https://tgbackend-production-3ec4.up.railway.app/admin/manali/action?booking_id={booking.id}&action=approve"
+    decline_payment = f"https://tgbackend-production-3ec4.up.railway.app/admin/manali/action?booking_id={booking.id}&action=decline_payment"
 
     """
     Sends Manali booking details to admin email.
