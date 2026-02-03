@@ -22,9 +22,9 @@ Address: {d.address}
 ID     : {d.aadhar_image_url}
 """
 
-    approve = f"https://tgbackend-production-3ec4.up.railway.app/admin/vr-darshan/action?booking_id={booking.id}&action=approve"
-    decline_age = f"https://tgbackend-production-3ec4.up.railway.app/admin/vr-darshan/action?booking_id={booking.id}&action=decline_age"
-    decline_payment = f"https://tgbackend-production-3ec4.up.railway.app/admin/vr-darshan/action?booking_id={booking.id}&action=decline_payment"
+    approve = f"https://tgbackend-production-7c1c.up.railway.app/admin/vr-darshan/action?booking_id={booking.id}&action=approve"
+    decline_age = f"https://tgbackend-production-7c1c.up.railway.app/admin/vr-darshan/action?booking_id={booking.id}&action=decline_age"
+    decline_payment = f"https://tgbackend-production-7c1c.up.railway.app/admin/vr-darshan/action?booking_id={booking.id}&action=decline_payment"
 
     body = f"""
 NEW VR DARSHAN BOOKING

@@ -78,11 +78,11 @@ base_url = settings.base_url
 
 async def send_booking_email(data, image_path: str | None = None):
     try:
-        admin_action_base = "https://tgbackend-production-62ff.up.railway.app/odt/confirm"
+        admin_action_base = "https://tgbackend-production-7c1c.up.railway.app/odt/confirm"
         
         button_739 = f"{admin_action_base}?booking_id={data.id}&amount=739"
         button_939 = f"{admin_action_base}?booking_id={data.id}&amount=939"
-        decline_link = f"https://tgbackend-production-62ff.up.railway.app/odt/decline?booking_id={data.id}"
+        decline_link = f"https://tgbackend-production-7c1c.up.railway.app/odt/decline?booking_id={data.id}"
 
         safe_text = f"""
         A new trekking booking has been submitted.
