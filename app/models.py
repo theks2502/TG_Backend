@@ -1,4 +1,4 @@
-from sqlalchemy import  Column , Integer , String , Boolean, Text , ForeignKey  , Date , text ,CheckConstraint, func ,DateTime
+from sqlalchemy import  Column , Integer , String , Boolean, Text , ForeignKey  , Date , text ,CheckConstraint, func ,DateTime , UniqueConstraint
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.sqltypes import TIMESTAMP
 from .database import Base
@@ -192,7 +192,21 @@ class HiringApplication(Base):
         nullable=False
     )
 
+class VRBenefitClaim(Base):
+    __tablename__ = "vr_benefit_claims"
 
+    id = Column(Integer, primary_key=True, index=True)
+    benefit_code = Column(String(100), nullable=False)
+    aadhar_image_hash = Column(String(64), nullable=False)
+    claimed_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    __table_args__ = (
+        UniqueConstraint(
+            "benefit_code",
+            "aadhar_image_hash",
+            name="uq_benefit_aadhar"
+        ),
+    )
 class VRDarshanBooking(Base):
     __tablename__ = "vr_darshan_booking"
 
@@ -248,6 +262,7 @@ class VRDarshanDevotee(Base):
 
     # ---------------- Identity ----------------
     aadhar_image_url = Column(Text, nullable=False)
+    aadhar_image_hash = Column(String(64) , nullable = False )
 
     created_at = Column(
         DateTime(timezone=True),
@@ -270,6 +285,8 @@ class InstantVRDarshan(Base):
     darshanCategory = Column(String(100), nullable=False)
     darshan = Column(String(150), nullable=False)
     contact_number = Column(String(15), nullable=False)
+    aadhar_image_url = Column(Text, nullable=False)
+    aadhar_image_hash = Column(String(64) , nullable = False )
     payment_option = Column(String(255), nullable=True)
     submitted_at =  Column(
         DateTime(timezone=True),

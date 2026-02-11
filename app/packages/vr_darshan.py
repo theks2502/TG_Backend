@@ -1,6 +1,7 @@
 from fastapi import FastAPI ,  HTTPException , Response , status , Depends , APIRouter , Form , File , UploadFile
 from app import models , schema  
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session 
+from sqlalchemy.exc import IntegrityError
 from app.database import engine , get_db
 from app.config import settings  
 from app.utils.mail.vr_admin_mail import send_admin_vr_darshan_email
@@ -11,6 +12,7 @@ from datetime import date
 from app.utils.supabase_uploads import upload_to_supabase
 from app.models import InstantVRDarshan
 from app.schema import InstantVRDarshanRequest
+from app.utils.hash.vr_aadhar_image import generate_image_hash
 
 
 router = APIRouter()
@@ -91,8 +93,7 @@ async def create_vr_darshan_booking(
     )
 
     db.add(booking)
-    db.commit()
-    db.refresh(booking)
+    db.flush()
 
     # ---------------- Create Devotees ----------------
     for index, devotee in enumerate(devotees_data):
@@ -104,13 +105,33 @@ async def create_vr_darshan_booking(
                 detail=f"Missing devotee fields at index {index}"
             )
 
+        image_hash , file_bytes = await generate_image_hash(aadhar_images[index])
+
+        if devotee["age"] >= 60:
+            try:
+                claim = models.VRBenefitClaim(
+                    benefit_code="FREE_VR_60_PLUS",
+                    aadhar_image_hash=image_hash
+                )
+                db.add(claim)
+                db.flush()  # triggers UNIQUE constraint
+
+            except IntegrityError:
+                db.rollback()
+                raise HTTPException(
+                    status_code=400,
+                    detail="This Aadhaar has already claimed free VR Darshan."
+                )
+        aadhar_images[index].file.seek(0)
+
         # Upload Aadhaar
         aadhar_url = upload_to_supabase(
             aadhar_images[index],
             folder="vr_darshan_aadhar"
+            # file_bytes=file_bytes
         )
         
-
+        
         db.add(
             models.VRDarshanDevotee(
                 booking_id=booking.id,
@@ -118,9 +139,14 @@ async def create_vr_darshan_booking(
                 age=devotee["age"],
                 gender=devotee["gender"],
                 address=devotee["address"],
-                aadhar_image_url=aadhar_url
+                aadhar_image_url=aadhar_url,
+                aadhar_image_hash=image_hash
             )
         )
+
+        db.flush()
+
+        
 
     db.commit()
     background_tasks.add_task(send_admin_vr_darshan_email, booking)
@@ -131,14 +157,49 @@ async def create_vr_darshan_booking(
     }
 
 @router.post("/instant-vr-darshan")
-def add_multiple(devotees: str = Form(...),          
+async def add_multiple(devotees: str = Form(...),          
     paymentMode: str = Form(...),
+    aadhar_images: list[UploadFile] = File(...),
      db: Session = Depends(get_db)):
     
     devotees_list = json.loads(devotees)
+    if len(devotees_list) != len(aadhar_images):
+        raise HTTPException(
+            status_code=400,
+            detail="Devotees count and Aadhar images count must match."
+        )
     rows = []
 
-    for d in devotees_list:
+   
+
+    for index , d in enumerate(devotees_list):
+        #hash first
+        image_hash,_ = await generate_image_hash(aadhar_images[index])
+
+        if d["age"] >= 60:
+            try:
+                claim = models.VRBenefitClaim(
+                    benefit_code="FREE_VR_60_PLUS",
+                    aadhar_image_hash=image_hash
+                )
+                db.add(claim)
+                db.flush()  # triggers UNIQUE constraint
+
+            except IntegrityError:
+                db.rollback()
+                raise HTTPException(
+                    status_code=400,
+                    detail="This Aadhaar has already claimed free VR Darshan."
+                )
+        
+        aadhar_images[index].file.seek(0)
+
+        aadhar_url = upload_to_supabase(
+            aadhar_images[index],
+            folder="instant_vr_aadhar"
+        )
+
+        
         row = InstantVRDarshan(
             full_name=d["name"],              # frontend → DB
             age=d["age"],
@@ -146,15 +207,18 @@ def add_multiple(devotees: str = Form(...),
             darshanCategory=d["category"],    # IMPORTANT
             darshan=d["darshan"],
             contact_number="NA",              # frontend doesn’t send it
-            payment_option=paymentMode.upper()
+            payment_option=paymentMode.upper(),
+            aadhar_image_url=aadhar_url,
+            aadhar_image_hash=image_hash
         )
-        rows.append(row)
+        db.add(row)
+            
 
-    db.add_all(rows)
+        
     db.commit()
 
     return {
-        "inserted": len(rows)
+        "inserted": len(devotees_list)
     }
 
 

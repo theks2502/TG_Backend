@@ -40,11 +40,23 @@ def generate_payment_qr(amount: int) -> str:
 @router.get("/vr-darshan/price")
 async def calculate_vr_darshan_price(
     number_of_persons: int,
+    spiritual_place:str,
 ):
 
-    PRICE_PER_SENIOR = 39
+    if number_of_persons <= 0:
+        raise HTTPException(status_code=400, detail="Invalid number of persons")
 
-    amount = number_of_persons * PRICE_PER_SENIOR
+    price_mapping = {
+        "All Char Dham": 151,
+        "Jyotirling Abhishek": 11,
+        "General": 51
+    }
+
+    if spiritual_place not in price_mapping:
+        raise HTTPException(status_code=400, detail="Invalid spiritual place")
+
+    amount = number_of_persons * price_mapping[spiritual_place]
+    
 
     qr_url = None
     session_id = None
