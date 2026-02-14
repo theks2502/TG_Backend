@@ -208,6 +208,15 @@ class InstantVRDarshanRequest(BaseModel):
     paymentMode: str
     devotees: List[InstantVRDarshanDevotee]
 
+class ShivratriVRDarshanBase(BaseModel):
+    full_name: Optional[str] = None
+    age: Optional[int] = None
+    gender: Optional[str] = None
+    darshanCategory: Optional[str] = None
+    darshan: Optional[str] = None
+    contact_number: Optional[str] = None
+    aadhar_image_url: Optional[str] = None
+
 # Manali Trip '
 
 class ManaliPassengerSchema(BaseModel):

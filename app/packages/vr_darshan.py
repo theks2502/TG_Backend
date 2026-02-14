@@ -1,4 +1,4 @@
-from fastapi import FastAPI ,  HTTPException , Response , status , Depends , APIRouter , Form , File , UploadFile
+from fastapi import FastAPI ,  HTTPException , Response , status , Depends , APIRouter , Form , File , UploadFile , Request
 from app import models , schema  
 from sqlalchemy.orm import Session 
 from sqlalchemy.exc import IntegrityError
@@ -10,7 +10,7 @@ from fastapi import BackgroundTasks
 from app.utils.invoice_generator import generate_invoice
 from datetime import date
 from app.utils.supabase_uploads import upload_to_supabase
-from app.models import InstantVRDarshan
+from app.models import InstantVRDarshan , ShivratriVRDarshan
 from app.schema import InstantVRDarshanRequest
 from app.utils.hash.vr_aadhar_image import generate_image_hash
 
@@ -221,5 +221,53 @@ async def add_multiple(devotees: str = Form(...),
         "inserted": len(devotees_list)
     }
 
+@router.post("/shivratri-vr-darshan")
+async def add_multiple(
+    request: Request,
+    devotees: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    # Validate JSON
+    try:
+        devotees_list = json.loads(devotees)
+        if not isinstance(devotees_list, list):
+            raise ValueError
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid devotees data")
 
+    form = await request.form()
 
+    try:
+        for index, d in enumerate(devotees_list):
+
+            aadhar_url = None
+            file_key = f"aadhar_{index}"
+
+            # Explicit file mapping per devotee
+            if file_key in form:
+                file = form[file_key]
+                if file and hasattr(file, "filename") and file.filename:
+                    aadhar_url = upload_to_supabase(
+                        file,
+                        folder="shivratri_vr_darshan"
+                    )
+
+            row = ShivratriVRDarshan(
+                full_name=d.get("name") or None,
+                age=int(d["age"]) if d.get("age") not in [None, ""] else None,
+                gender=d.get("gender") or None,
+                darshanCategory=d.get("category") or None,
+                darshan=d.get("darshan") or None,
+                contact_number=d.get("contact_number") or None,
+                aadhar_image_url=aadhar_url
+            )
+
+            db.add(row)
+
+        db.commit()
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+    return {"inserted": len(devotees_list)}

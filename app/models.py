@@ -294,6 +294,22 @@ class InstantVRDarshan(Base):
         nullable=False
     )
 
+class ShivratriVRDarshan(Base):
+    __tablename__="shivratri_vr_darshan"
+
+    id= Column(Integer ,primary_key=True , index=True)
+    full_name = Column(String(150), nullable=True)
+    age = Column(Integer, nullable=True)
+    gender = Column(String(20), nullable=True)
+    darshanCategory = Column(String(100), nullable=True)
+    darshan = Column(String(150), nullable=True)
+    contact_number = Column(String(15), nullable=True)
+    aadhar_image_url = Column(Text, nullable=True)
+    submitted_at =  Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False
+    )
 #MANALI TRIP
 class ManaliTripBooking(Base):
     __tablename__ = "manali_trip_booking"
